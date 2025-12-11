@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jsut.mapper.ArticleMapper">
+
+    <select id="list" resultType="org.jsut.pojo.Article">
+        select * from article
+        <where>
+            <if test="categoryId!=null">
+                category_id=#{categoryId}
+            </if>
+            <if test="state!=null">
+                and state=#{state}
+            </if>
+            and create_user=#{userId}
+        </where>
+    </select>
+
+    <select id="listPublic" resultType="org.jsut.pojo.Article">
+        select
+        a.*,
+        u.nickname,
+        (CASE WHEN f.id IS NOT NULL THEN 1 ELSE 0 END) as isFavorite
+        from article a
+        left join user u on a.create_user = u.id
+        left join favorite f on a.id = f.article_id and f.user_id = #{userId}
+        <where>
+            a.state = '已发布'
+            <if test="categoryId != null">
+                and a.category_id = #{categoryId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and a.title like concat('%', #{keyword}, '%')
+            </if>
+        </where>
+        order by a.create_time desc
+    </select>
+
+</mapper>
